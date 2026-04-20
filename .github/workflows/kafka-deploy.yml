@@ -1,0 +1,29 @@
+name: Kafka Deploy
+
+on:
+  push:
+    paths:
+      - 'k8s/kafka.yaml'
+      - 'k8s/kafka-app.yaml'
+      - 'kafka-app/**'
+
+jobs:
+  kafka:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name demo-eks --region us-east-1
+
+      - name: Deploy Kafka
+        run: |
+          kubectl apply -f k8s/kafka.yaml
+          kubectl apply -f k8s/kafka-app.yaml
